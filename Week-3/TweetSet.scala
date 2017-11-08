@@ -33,6 +33,7 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
  * [1] http://en.wikipedia.org/wiki/Binary_search_tree
  */
 abstract class TweetSet {
+  def isEmpty: Boolean
 
   /**
    * This method takes a predicate and returns a subset of all the elements
@@ -64,11 +65,12 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def mostRetweeted: Tweet = {
+    /*def mostRetweeted: Tweet = {
       var tweet = new Tweet("","",0)
       foreach( f => if (f.retweets > tweet.retweets) tweet = f)
       tweet
-    }
+    }*/
+  def mostRetweeted: Tweet
   
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -111,6 +113,7 @@ abstract class TweetSet {
 }
 
 class Empty extends TweetSet {
+  def isEmpty = true
 
   def filter(p: Tweet => Boolean): TweetSet = (filterAcc(p, new Empty()))
 
@@ -120,7 +123,8 @@ class Empty extends TweetSet {
 
   def descendingByRetweet: TweetList = Nil
 
-  /**
+  def mostRetweeted: Tweet = new Tweet("","",0)
+  /**00
    * The following methods are already implemented
    */
 
@@ -135,12 +139,22 @@ class Empty extends TweetSet {
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
-    def filter(p: Tweet => Boolean): TweetSet = filterAcc(p,new NonEmpty(elem, new Empty, new Empty))
+    def isEmpty = false
+
+    def filter(p: Tweet => Boolean): TweetSet = {
+      //var tweetSet = new NonEmpty(elem, new Empty, new Empty)
+      var tweetSet = left.filter(p).union(right.filter(p))
+      if ()
+
+      //filterAcc(p,new NonEmpty(elem, new Empty, new Empty))
+    }
 
     def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
-      var sm = acc
+      if (p(elem)) acc.incl(elem)
+
+     /* var sm = acc
       foreach(f => if (p(f)) sm = sm.incl(f))
-      sm
+      sm*/
     }
 
     def union(that: TweetSet): TweetSet = {
@@ -149,14 +163,16 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
       un
     }
 
-    def descendingByRetweet: TweetList = {
-      var tweetList = new Cons(new Tweet("","",0), Nil)
-      def descendingIter(tweets : TweetSet): TweetList = {
-     //   if (length(tweets) == 0)
-        tweets.foreach(f => println)
-        descendingIter(this.remove(elem))
+    def mostRetweeted: Tweet = {
+      def mostRetweetedAcc(tweetSet: TweetSet, tweet: Tweet): Tweet ={
+        if (tweet.retweets > elem.retweets) mostRetweetedAcc(tweetSet.remove(tweet), tweet)
+        else mostRetweetedAcc(tweetSet.remove(elem), elem)
       }
-      descendingIter(this.remove(elem))
+      mostRetweetedAcc(this.remove(this.elem), elem)
+    }
+
+    def descendingByRetweet: TweetList = {
+
     }
 
   /**
